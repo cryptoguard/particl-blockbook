@@ -5,7 +5,7 @@
             <a href="/tx/{{$tx.Txid}}" class="ellipsis copyable txid">{{$tx.Txid}}</a>
             {{if $tx.Rbf}}<span class="ps-1" tt="Replace-by-Fee (RBF) transaction, could be overridden"> RBF</span>{{end}}
         </div>
-        {{if $tx.Blocktime}}<div class="col-xs-5 col-md-4 text-end">{{if $tx.Confirmations}}mined{{else}}first seen{{end}} <span class="txvalue ms-1">{{unixTimeSpan $tx.Blocktime}}</span></div>{{end}}
+        {{if $tx.Blocktime}}<div class="col-xs-5 col-md-4 text-end">{{if $tx.Confirmations}}staked{{else}}first seen{{end}} <span class="txvalue ms-1">{{unixTimeSpan $tx.Blocktime}}</span></div>{{end}}
         {{if eq $tx.EthereumSpecific.Status 0}}<div class="col-12 txerror pb-1"><span class="badge bg-danger">Failed</span>{{if $tx.EthereumSpecific.Error}}<span class="small ms-1">{{$tx.EthereumSpecific.Error}}</span>{{end}}</div>{{end}}
         {{if $tx.EthereumSpecific.ParsedData}}
             {{if $tx.EthereumSpecific.ParsedData.Name}}<div class="col-12 small"><span class="txvalue">{{$tx.EthereumSpecific.ParsedData.Name}}</span>{{if $tx.EthereumSpecific.ParsedData.MethodId}}<span class="ms-1" tt="4-byte signature"> ({{$tx.EthereumSpecific.ParsedData.MethodId}})</span>{{end}}</div>{{else}}

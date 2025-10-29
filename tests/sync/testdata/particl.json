@@ -1,0 +1,186 @@
+{
+    "connectBlocks": {
+        "syncRanges": [
+            {
+                "lower": 2000000,
+                "upper": 2000002
+            }
+        ],
+        "blocks": {
+            "2000000": {
+                "height": 2000000,
+                "hash": "248835b2ee69a5dc7f1db0d6713f39a09b64af8a88a3f2c0410d5867d21f2979",
+                "noTxs": 1,
+                "txDetails": [
+                    {
+                        "hex": "a002000000000141ae0c4202f34907dfde868547ded5496ddf4f5cf998d53131f00544fd7dc5710100000000ffffffff02041280841e0007d5c0ceaa850309020affffff1e010a40cdf61a00000042b86376a914ffb38eb2218a1396845fd10b6b18649c6b33d46888ac6776a820fbdc6318c89454e43cf9fdeec04ad6d638c7dfbb2a7c952575f0e8a5602d89f088ac680247304402204a8c40455e014bc7974448af0b9a6e45bd71236e3054629950696c35d255bc7e02206f3c9f8e2995238f0a083bbbbde7134fdac62ddb39a72e6b5e314f1f4ee9268e012103fb69f5fb27ff32d06cf713e8c1b622c643cf2abde27a72d680818199adc2a8a0",
+                        "txid": "659bed26f069a614c5d2f5db73351f3fbb84cef8aaca5aaeecc9bd7794a9c208",
+                        "blocktime": 1758020208,
+                        "time": 1758020208,
+                        "locktime": 0,
+                        "version": 672,
+                        "vin": [
+                            {
+                                "txid": "71c57dfd4405f03131d598f95c4fdf6d49d5de478586dedf0749f302420cae41",
+                                "vout": 1,
+                                "scriptSig": {
+                                    "asm": "",
+                                    "hex": ""
+                                },
+                                "txinwitness": [
+                                    "304402204a8c40455e014bc7974448af0b9a6e45bd71236e3054629950696c35d255bc7e02206f3c9f8e2995238f0a083bbbbde7134fdac62ddb39a72e6b5e314f1f4ee9268e01",
+                                    "03fb69f5fb27ff32d06cf713e8c1b622c643cf2abde27a72d680818199adc2a8a0"
+                                ],
+                                "sequence": 4294967295
+                            }
+                        ],
+                        "vout": [
+                            {
+                                "n": 0,
+                                "type": "data",
+                                "data_hex": "80841e0007d5c0ceaa850309020affffff1e",
+                                "treasury_fund_cfwd": 1045.10758997,
+                                "smsgfeerate": 2e-08,
+                                "smsgdifficulty": "1effffff"
+                            },
+                            {
+                                "n": 1,
+                                "type": "standard",
+                                "value": 1158.09796106,
+                                "valueSat": 115809796106,
+                                "scriptPubKey": {
+                                    "asm": "OP_ISCOINSTAKE OP_IF OP_DUP OP_HASH160 ffb38eb2218a1396845fd10b6b18649c6b33d468 OP_EQUALVERIFY OP_CHECKSIG OP_ELSE OP_DUP OP_SHA256 fbdc6318c89454e43cf9fdeec04ad6d638c7dfbb2a7c952575f0e8a5602d89f0 OP_EQUALVERIFY OP_CHECKSIG OP_ENDIF",
+                                    "desc": "raw(b86376a914ffb38eb2218a1396845fd10b6b18649c6b33d46888ac6776a820fbdc6318c89454e43cf9fdeec04ad6d638c7dfbb2a7c952575f0e8a5602d89f088ac68)#jpvkwja0",
+                                    "hex": "b86376a914ffb38eb2218a1396845fd10b6b18649c6b33d46888ac6776a820fbdc6318c89454e43cf9fdeec04ad6d638c7dfbb2a7c952575f0e8a5602d89f088ac68",
+                                    "address": "2wiMWDkxmfeRS5gJXzpVz1mxzDQm1dVhh86mwKWp9uFfi4BCVJL",
+                                    "stakeaddress": "PwEoYsAYx7pALYGfRXTFQQeMQeD3cUh1vA",
+                                    "type": "nonstandard"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "2000001": {
+                "height": 2000001,
+                "hash": "7f660d28c7eab8729d52a03f6045ba4425006496ae2ef064ba1c5630b7841312",
+                "noTxs": 1,
+                "txDetails": [
+                    {
+                        "hex": "a00200000000019f5c81e91692c6a8469c061db7ef6104fcdb97d65c116a9260705c44e31998c10100000000ffffffff03041281841e00079bf2d5fd850309030affffff1e0132cb85b02700000042b86376a9142d691b24a7b0abe25960678d1d4a25375fedad8088ac6776a8207358fe134f076665944b7093231d10ab8e02e798e582f08a632db30d2c0c2f6388ac6801c6d8610a000000001976a91488706d754ba21bf588aa4cfc9f5f66b09080be1588ac02473044022058e071ca196375d1c07ba23adea261cdef54839bf22a7149f8365ef820baad400220772a30681f6187c43d10569ee850fe9a51aee93adcf1161eacf4b93d86c2f0c701210264cbe9e78010c7cc3fdfc8ef4217d7379229695a29e96ca2c58952966cb6c94e",
+                        "txid": "c603ba30f5e3e2a815ae44382b4564943a32ff7c9b84937cf278964aba5f00a2",
+                        "blocktime": 1758021008,
+                        "time": 1758021008,
+                        "locktime": 0,
+                        "version": 672,
+                        "vin": [
+                            {
+                                "txid": "c19819e3445c7060926a115cd697dbfc0461efb71d069c46a8c69216e9815c9f",
+                                "vout": 1,
+                                "scriptSig": {
+                                    "asm": "",
+                                    "hex": ""
+                                },
+                                "txinwitness": [
+                                    "3044022058e071ca196375d1c07ba23adea261cdef54839bf22a7149f8365ef820baad400220772a30681f6187c43d10569ee850fe9a51aee93adcf1161eacf4b93d86c2f0c701",
+                                    "0264cbe9e78010c7cc3fdfc8ef4217d7379229695a29e96ca2c58952966cb6c94e"
+                                ],
+                                "sequence": 4294967295
+                            }
+                        ],
+                        "vout": [
+                            {
+                                "n": 0,
+                                "type": "data",
+                                "data_hex": "81841e00079bf2d5fd850309030affffff1e",
+                                "treasury_fund_cfwd": 1046.84943643,
+                                "smsgfeerate": 3e-08,
+                                "smsgdifficulty": "1effffff"
+                            },
+                            {
+                                "n": 1,
+                                "type": "standard",
+                                "value": 1704.65282866,
+                                "valueSat": 170465282866,
+                                "scriptPubKey": {
+                                    "asm": "OP_ISCOINSTAKE OP_IF OP_DUP OP_HASH160 2d691b24a7b0abe25960678d1d4a25375fedad80 OP_EQUALVERIFY OP_CHECKSIG OP_ELSE OP_DUP OP_SHA256 7358fe134f076665944b7093231d10ab8e02e798e582f08a632db30d2c0c2f63 OP_EQUALVERIFY OP_CHECKSIG OP_ENDIF",
+                                    "desc": "raw(b86376a9142d691b24a7b0abe25960678d1d4a25375fedad8088ac6776a8207358fe134f076665944b7093231d10ab8e02e798e582f08a632db30d2c0c2f6388ac68)#ey0d7g8d",
+                                    "hex": "b86376a9142d691b24a7b0abe25960678d1d4a25375fedad8088ac6776a8207358fe134f076665944b7093231d10ab8e02e798e582f08a632db30d2c0c2f6388ac68",
+                                    "address": "2vgETSFFEc2e7usaP25mQ8VBNLbMYNfMorNcLRyZ7Zr9ZUMMWSs",
+                                    "stakeaddress": "Pc4tTcGj4iS8aibFiyJf8wd6dVwDXmjov7",
+                                    "type": "nonstandard"
+                                }
+                            },
+                            {
+                                "n": 2,
+                                "type": "standard",
+                                "value": 1.74184646,
+                                "valueSat": 174184646,
+                                "scriptPubKey": {
+                                    "asm": "OP_DUP OP_HASH160 88706d754ba21bf588aa4cfc9f5f66b09080be15 OP_EQUALVERIFY OP_CHECKSIG",
+                                    "desc": "addr(PkNCimv8haURu1tfaNGVKJ98Mg89WyjUt6)#62r5u88f",
+                                    "hex": "76a91488706d754ba21bf588aa4cfc9f5f66b09080be1588ac",
+                                    "address": "PkNCimv8haURu1tfaNGVKJ98Mg89WyjUt6",
+                                    "type": "pubkeyhash"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "2000002": {
+                "height": 2000002,
+                "hash": "e714b45a7c079920b62d3be943e45150bb0721d41a3bd6c00b4df62813c92896",
+                "noTxs": 2,
+                "txDetails": [
+                    {
+                        "hex": "a002000000000165128a36434b0ef881f466421358c48dccea8e720a6ad18f4d9306ba93e02c580100000000ffffffff02041282841e0007a89bead0860309020affffff1e01fb1d0b72200000001976a91468b7d05f2802bae16e43548bcc7b8a2359ade4ff88ac0247304402202a550dc01cb4c2a76b583ee22fb9c9ea62d91d4c5a51bf8302f0e6a6116d5da8022054236af31957f73c236f375aacbaea603542854aed048c5faf32f878e714b050012102817316e062f6068e01a669ae011bbdf648a9279e9bace5a7e9c6043fc2195b27",
+                        "txid": "ec77e55c9d0039c796ed47ee7c6c2ae10fef89095287050da1220338da6987ce",
+                        "blocktime": 1758021024,
+                        "time": 1758021024,
+                        "locktime": 0,
+                        "version": 672,
+                        "vin": [
+                            {
+                                "txid": "582ce093ba06934d8fd16a0a728eeacc8dc458134266f481f80e4b43368a1265",
+                                "vout": 1,
+                                "scriptSig": {
+                                    "asm": "",
+                                    "hex": ""
+                                },
+                                "txinwitness": [
+                                    "304402202a550dc01cb4c2a76b583ee22fb9c9ea62d91d4c5a51bf8302f0e6a6116d5da8022054236af31957f73c236f375aacbaea603542854aed048c5faf32f878e714b05001",
+                                    "02817316e062f6068e01a669ae011bbdf648a9279e9bace5a7e9c6043fc2195b27"
+                                ],
+                                "sequence": 4294967295
+                            }
+                        ],
+                        "vout": [
+                            {
+                                "n": 0,
+                                "type": "data",
+                                "data_hex": "82841e0007a89bead0860309020affffff1e",
+                                "treasury_fund_cfwd": 1048.593402,
+                                "smsgfeerate": 2e-08,
+                                "smsgdifficulty": "1effffff"
+                            },
+                            {
+                                "n": 1,
+                                "type": "standard",
+                                "value": 1393.52284667,
+                                "valueSat": 139352284667,
+                                "scriptPubKey": {
+                                    "asm": "OP_DUP OP_HASH160 68b7d05f2802bae16e43548bcc7b8a2359ade4ff OP_EQUALVERIFY OP_CHECKSIG",
+                                    "desc": "addr(PhUUcechhMbX2nuMzf6rLNL4QdMkBJzunK)#n54x9kkx",
+                                    "hex": "76a91468b7d05f2802bae16e43548bcc7b8a2359ade4ff88ac",
+                                    "address": "PhUUcechhMbX2nuMzf6rLNL4QdMkBJzunK",
+                                    "type": "pubkeyhash"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -148,6 +148,11 @@ type Vin struct {
 	Hex       string                   `json:"hex,omitempty" ts_doc:"Raw script hex data for this input."`
 	Asm       string                   `json:"asm,omitempty" ts_doc:"Disassembled script for this input."`
 	Coinbase  string                   `json:"coinbase,omitempty" ts_doc:"Data for coinbase inputs (when mining)."`
+
+	// Particl privacy transaction fields for anon (RingCT) inputs
+	InputType   string `json:"inputType,omitempty" ts_doc:"Input type for Particl: 'anon' for RingCT inputs."`
+	AnonInputs  uint32 `json:"anonInputs,omitempty" ts_doc:"Number of real inputs in RingCT transaction."`
+	RingSize    uint32 `json:"ringSize,omitempty" ts_doc:"Size of the ring (decoy set) for RingCT inputs."`
 }
 
 // Vout contains information about single transaction output
@@ -165,6 +170,10 @@ type Vout struct {
 	IsAddress   bool                     `json:"isAddress" ts_doc:"Indicates whether this output is owned by valid address."`
 	IsOwn       bool                     `json:"isOwn,omitempty" ts_doc:"Indicates if this output belongs to the wallet in context."`
 	Type        string                   `json:"type,omitempty" ts_doc:"Output script type (e.g., 'P2PKH', 'P2SH')."`
+	// Particl privacy transaction fields
+	ValueCommitment string `json:"valueCommitment,omitempty" ts_doc:"Pedersen commitment for blind/anon outputs (hex)."`
+	Data            string `json:"data,omitempty" ts_doc:"Ephemeral public key or data for CT outputs (hex)."`
+	RangeProof      string `json:"rangeproof,omitempty" ts_doc:"Bulletproof range proof for CT outputs (hex)."`
 }
 
 // MultiTokenValue contains values for contracts with multiple token IDs
@@ -293,6 +302,7 @@ type Tx struct {
 	ValueOutSat            *Amount           `json:"value" ts_doc:"Total value of all outputs (in satoshi or base units)."`
 	ValueInSat             *Amount           `json:"valueIn,omitempty" ts_doc:"Total value of all inputs (in satoshi or base units)."`
 	FeesSat                *Amount           `json:"fees,omitempty" ts_doc:"Transaction fee (inputs - outputs)."`
+	RewardSat              *Amount           `json:"reward,omitempty" ts_doc:"Block reward for coinstake transactions (outputs - inputs)."`
 	Hex                    string            `json:"hex,omitempty" ts_doc:"Raw hex-encoded transaction data."`
 	Rbf                    bool              `json:"rbf,omitempty" ts_doc:"Indicates if this transaction is replace-by-fee (RBF) enabled."`
 	CoinSpecificData       json.RawMessage   `json:"coinSpecificData,omitempty" ts_type:"any" ts_doc:"Blockchain-specific extended data."`

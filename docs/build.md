@@ -183,6 +183,93 @@ relative to *backend* directory where archive is extracted.
 
 Configuration is described in [config.md](/docs/config.md).
 
+## Building Blockbook for Particl (Special Case)
+
+Particl requires a special build process due to a known issue with the `gnark-crypto` dependency that causes "file name too long" errors on some filesystems (especially encrypted home directories or filesystems with path length restrictions).
+
+### The Issue
+
+During the build process, Go's module cache creates deeply nested directory structures. The `gnark-crypto` library (a dependency of some Blockbook components) generates paths that exceed the 255-character limit on many Linux filesystems:
+
+```
+.../go/pkg/mod/cache/download/github.com/consensys/gnark-crypto/@v/v0.x.x.mod
+```
+
+This results in errors like:
+```
+mkdir: cannot create directory '...': File name too long
+```
+
+### Solution: Short Module Cache Path
+
+Use `/tmp/gomod` as a temporary module cache location to avoid path length issues:
+
+```bash
+# Navigate to blockbook directory
+cd /path/to/blockbook
+
+# Create short module cache path
+mkdir -p /tmp/gomod
+
+# Set environment variables
+export PATH=$PATH:/usr/local/go/bin
+export GOMODCACHE=/tmp/gomod
+
+# Build Blockbook
+go build -o build/blockbook .
+```
+
+The binary will be created at `build/blockbook`.
+
+### Why This Works
+
+- `/tmp/gomod` is a **short path** (10 characters vs typical `~/.cache/go-build/...` paths of 50+ characters)
+- This leaves ~240 characters for the dependency paths, well within filesystem limits
+- The `/tmp` directory is not subject to encryption overhead that can reduce path limits
+
+### Alternative: Permanent Fix
+
+If you build Blockbook frequently, you can set `GOMODCACHE` permanently in your shell profile:
+
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+export GOMODCACHE=/tmp/gomod
+```
+
+**Note**: The `/tmp` directory is cleared on reboot, so you'll need to rebuild dependencies after a restart. For development, consider using a persistent location like `/var/tmp/gomod` which survives reboots.
+
+### Docker Build (Not Affected)
+
+If you're using the Docker-based build process (`make` or `make all-particl`), this issue **does not apply** because the Docker container uses its own isolated filesystem with short paths.
+
+### After Building
+
+Once built, the Blockbook binary can be run from any location. The GOMODCACHE workaround is only needed during the build process.
+
+### Database Storage Recommendations
+
+When running Blockbook for Particl, the `-datadir` flag specifies where the RocksDB database is stored (typically 15-20GB when fully synced).
+
+**Default (if `-datadir` not specified):** `./data` (relative to current working directory)
+⚠️ **Warning:** The default relative path is **not recommended** as it changes based on where you run the command and may create the database inside your source code directory.
+
+**Always use an absolute path with `-datadir`:**
+
+| Environment | Recommended Path | Notes |
+|------------|------------------|-------|
+| **Development/Personal** | `~/.particl-blockbook/data` | User-owned, persistent, no root required |
+| **Production (system-wide)** | `/var/lib/blockbook/particl` | Standard Linux location, requires setup |
+| **High-volume deployments** | `/mnt/ssd/blockbook/particl` | Dedicated SSD partition for performance |
+| **Testing ONLY** | `/tmp/blockbook` | ⚠️ CLEARED ON REBOOT - Never use for production! |
+
+**Setup for production path** (`/var/lib/blockbook/particl`):
+```bash
+sudo mkdir -p /var/lib/blockbook/particl
+sudo chown yourusername:yourusername /var/lib/blockbook/particl
+# Or for dedicated blockbook user:
+# sudo chown blockbook:blockbook /var/lib/blockbook/particl
+```
+
 ## Manual build
 
 Instructions below are focused on Debian 11 on amd64. If you want to use another Linux distribution or operating system

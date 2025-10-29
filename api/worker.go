@@ -17,6 +17,7 @@ import (
 	"github.com/juju/errors"
 	"github.com/trezor/blockbook/bchain"
 	"github.com/trezor/blockbook/bchain/coins/eth"
+	"github.com/trezor/blockbook/bchain/coins/part"
 	"github.com/trezor/blockbook/common"
 	"github.com/trezor/blockbook/db"
 	"github.com/trezor/blockbook/fiat"
@@ -209,11 +210,73 @@ func (w *Worker) GetTransaction(txid string, spendingTxs bool, specificJSON bool
 
 // GetRawTransaction gets raw transaction data in hex format from txid
 func (w *Worker) GetRawTransaction(txid string) (string, error) {
+	if w.chainType == bchain.ChainBitcoinType {
+		// For Bitcoin-type chains, get the transaction and return its hex field
+		bchainTx, err := w.chain.GetTransaction(txid)
+		if err != nil {
+			return "", err
+		}
+		if bchainTx.Hex == "" {
+			return "", NewAPIError("Transaction hex data not available", true)
+		}
+		return bchainTx.Hex, nil
+	}
+	// For Ethereum-type chains, use the original method
 	return w.chain.EthereumTypeGetRawTransaction(txid)
 }
 
 // getTransaction reads transaction data from txid
 func (w *Worker) getTransaction(txid string, spendingTxs bool, specificJSON bool, addresses map[string]struct{}) (*Tx, error) {
+	// Try to get from database first for confirmed transactions (much faster than RPC)
+	if w.chainType == bchain.ChainBitcoinType {
+		ta, err := w.db.GetTxAddresses(txid)
+		if err != nil {
+			glog.V(1).Infof("GetTxAddresses %v, trying RPC: %v", txid, err)
+		}
+		if ta != nil && ta.Height > 0 {
+			// Transaction is confirmed and in database, use database path
+			bi, err := w.db.GetBlockInfo(ta.Height)
+			if err != nil {
+				glog.Warningf("GetBlockInfo %v error %v", ta.Height, err)
+			} else if bi != nil {
+				bestheight, _, err := w.db.GetBestBlock()
+				if err != nil {
+					glog.Warningf("GetBestBlock error %v", err)
+				} else {
+					// Use database transaction (includes privacy fields with extended index)
+					tx := w.txFromTxAddress(txid, ta, bi, bestheight, addresses)
+
+					// Fetch raw hex from RPC (bypass cache to ensure fresh data with hex field)
+					// GetTransaction returns the full transaction including the Hex field
+					bchainTx, err := w.chain.GetTransaction(txid)
+					if err == nil && bchainTx != nil {
+						glog.Infof("DEBUG: Got bchainTx for %v, Hex len: %d", txid[:16], len(bchainTx.Hex))
+						if bchainTx.Hex != "" {
+							tx.Hex = bchainTx.Hex
+							glog.Infof("DEBUG: Set tx.Hex, len: %d", len(tx.Hex))
+						} else {
+							glog.Warningf("bchainTx.Hex is empty for tx %v", txid)
+						}
+					} else {
+						glog.Warningf("Could not get hex for tx %v: %v", txid, err)
+					}
+
+					if spendingTxs {
+						// Add spending transaction info if requested
+						for i := range tx.Vout {
+							err = w.setSpendingTxToVout(&tx.Vout[i], txid, bestheight)
+							if err != nil {
+								glog.Errorf("setSpendingTxToVout error %v", err)
+							}
+						}
+					}
+					return tx, nil
+				}
+			}
+		}
+	}
+
+	// Fall back to RPC (for mempool transactions or if database lookup failed)
 	bchainTx, height, err := w.txCache.GetTransaction(txid)
 	if err != nil {
 		if err == bchain.ErrTxNotFound {
@@ -320,6 +383,12 @@ func (w *Worker) getTransactionFromBchainTx(bchainTx *bchain.Tx, height int, spe
 		}
 		vin.Hex = bchainVin.ScriptSig.Hex
 		vin.Coinbase = bchainVin.Coinbase
+
+		// Particl anon input fields
+		vin.InputType = bchainVin.InputType
+		vin.AnonInputs = bchainVin.AnonInputs
+		vin.RingSize = bchainVin.RingSize
+
 		if w.chainType == bchain.ChainBitcoinType {
 			//  bchainVin.Txid=="" is coinbase transaction
 			if bchainVin.Txid != "" {
@@ -394,6 +463,13 @@ func (w *Worker) getTransactionFromBchainTx(bchainTx *bchain.Tx, height int, spe
 		vout.ValueSat = (*Amount)(&bchainVout.ValueSat)
 		valOutSat.Add(&valOutSat, &bchainVout.ValueSat)
 		vout.Hex = bchainVout.ScriptPubKey.Hex
+		vout.Type = bchainVout.OutputType
+
+		// Particl privacy output fields
+		vout.ValueCommitment = bchainVout.ValueCommitment
+		vout.Data = bchainVout.Data
+		vout.RangeProof = bchainVout.RangeProof
+
 		vout.AddrDesc, vout.Addresses, vout.IsAddress, err = w.getAddressesFromVout(bchainVout)
 		if err != nil {
 			glog.V(2).Infof("getAddressesFromVout error %v, %v, output %v", err, bchainTx.Txid, bchainVout.N)
@@ -416,10 +492,18 @@ func (w *Worker) getTransactionFromBchainTx(bchainTx *bchain.Tx, height int, spe
 		}
 	}
 	if w.chainType == bchain.ChainBitcoinType {
-		// for coinbase transactions valIn is 0
-		feesSat.Sub(&valInSat, &valOutSat)
-		if feesSat.Sign() == -1 {
-			feesSat.SetUint64(0)
+		// Check if this is a Particl CT/RingCT transaction with embedded fee
+		if particlData, ok := bchainTx.CoinSpecificData.(*part.ParticlTxData); ok && particlData != nil && particlData.CTFee > 0 {
+			// For Particl CT/RingCT transactions, use the CT fee from the data output
+			// Convert from PART to satoshis (1 PART = 100,000,000 satoshis)
+			feesSat.SetInt64(int64(particlData.CTFee * 100000000))
+		} else {
+			// For standard Bitcoin-like transactions: fee = inputs - outputs
+			// for coinbase transactions valIn is 0
+			feesSat.Sub(&valInSat, &valOutSat)
+			if feesSat.Sign() == -1 {
+				feesSat.SetUint64(0)
+			}
 		}
 		pValInSat = &valInSat
 	} else if w.chainType == bchain.ChainEthereumType {
@@ -897,6 +981,10 @@ func (w *Worker) txFromTxAddress(txid string, ta *db.TxAddresses, bi *db.BlockIn
 		if w.db.HasExtendedIndex() {
 			vin.Txid = tai.Txid
 			vin.Vout = tai.Vout
+			// Particl privacy input fields
+			vin.InputType = tai.InputType
+			vin.AnonInputs = tai.AnonInputs
+			vin.RingSize = tai.RingSize
 		}
 		aggregateAddresses(addresses, vin.Addresses, vin.IsAddress)
 	}
@@ -917,19 +1005,38 @@ func (w *Worker) txFromTxAddress(txid string, ta *db.TxAddresses, bi *db.BlockIn
 			vout.SpentIndex = int(tao.SpentIndex)
 			vout.SpentHeight = int(tao.SpentHeight)
 		}
+		if w.db.HasExtendedIndex() {
+			// Particl privacy output fields
+			vout.Type = tao.OutputType
+			vout.ValueCommitment = tao.ValueCommitment
+			vout.RangeProof = tao.RangeProof
+		}
 		aggregateAddresses(addresses, vout.Addresses, vout.IsAddress)
 	}
-	// for coinbase transactions valIn is 0
+	// Calculate fees and rewards
+	var rewardSat *Amount
 	feesSat.Sub(&valInSat, &valOutSat)
-	if feesSat.Sign() == -1 {
+
+	// For CT (privacy) transactions, use the stored CT fee from database
+	if w.db.HasExtendedIndex() && ta.CTFeeSat > 0 {
+		feesSat.SetInt64(ta.CTFeeSat)
+	} else if feesSat.Sign() == -1 {
+		// Negative fee means coinstake reward (valueOut > valueIn)
+		// Convert to positive reward amount
+		var reward big.Int
+		reward.Sub(&valOutSat, &valInSat)
+		rewardSat = (*Amount)(&reward)
+		// Set fee to 0 for coinstake transactions
 		feesSat.SetUint64(0)
 	}
+
 	r := &Tx{
 		Blockhash:     bi.Hash,
 		Blockheight:   int(ta.Height),
 		Blocktime:     bi.Time,
 		Confirmations: bestheight - ta.Height + 1,
 		FeesSat:       (*Amount)(&feesSat),
+		RewardSat:     rewardSat,
 		Txid:          txid,
 		ValueInSat:    (*Amount)(&valInSat),
 		ValueOutSat:   (*Amount)(&valOutSat),
@@ -2265,7 +2372,7 @@ func (w *Worker) GetBlock(bid string, page int, txsOnPage int) (*Block, error) {
 	txi := 0
 	addresses := w.newAddressesMapForAliases()
 	for i := from; i < to; i++ {
-		txs[txi], err = w.txFromTxid(bi.Txids[i], bestheight, AccountDetailsTxHistoryLight, dbi, addresses)
+		txs[txi], err = w.txFromTxid(bi.Txids[i], bestheight, AccountDetailsTxHistory, dbi, addresses)
 		if err != nil {
 			return nil, err
 		}

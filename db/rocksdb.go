@@ -19,6 +19,7 @@ import (
 	"github.com/juju/errors"
 	"github.com/linxGnu/grocksdb"
 	"github.com/trezor/blockbook/bchain"
+	"github.com/trezor/blockbook/bchain/coins/part"
 	"github.com/trezor/blockbook/common"
 )
 
@@ -448,6 +449,10 @@ type TxInput struct {
 	// extended index properties
 	Txid string
 	Vout uint32
+	// Particl privacy transaction fields for anon (RingCT) inputs
+	InputType   string
+	AnonInputs  uint32
+	RingSize    uint32
 }
 
 // Addresses converts AddressDescriptor of the input to array of strings
@@ -464,6 +469,10 @@ type TxOutput struct {
 	SpentTxid   string
 	SpentIndex  uint32
 	SpentHeight uint32
+	// Particl privacy transaction fields
+	OutputType      string
+	ValueCommitment string
+	RangeProof      string
 }
 
 // Addresses converts AddressDescriptor of the output to array of strings
@@ -477,7 +486,8 @@ type TxAddresses struct {
 	Inputs  []TxInput
 	Outputs []TxOutput
 	// extended index properties
-	VSize uint32
+	VSize      uint32
+	CTFeeSat   int64 // Confidential Transaction fee in satoshis for privacy transactions
 }
 
 // Utxo holds information about unspent transaction output
@@ -638,6 +648,13 @@ func (d *RocksDB) processAddressesBitcoinType(block *bchain.Block, addresses add
 			} else {
 				ta.VSize = uint32(len(tx.Hex))
 			}
+			// Extract CT fee from CoinSpecificData for privacy transactions
+			if tx.CoinSpecificData != nil {
+				if particlData, ok := tx.CoinSpecificData.(*part.ParticlTxData); ok && particlData.CTFee > 0 {
+					// Convert PART to satoshis (1 PART = 100,000,000 satoshis)
+					ta.CTFeeSat = int64(particlData.CTFee * 100000000)
+				}
+			}
 		}
 		ta.Outputs = make([]TxOutput, len(tx.Vout))
 		txAddressesMap[string(btxID)] = &ta
@@ -646,6 +663,10 @@ func (d *RocksDB) processAddressesBitcoinType(block *bchain.Block, addresses add
 			output := &tx.Vout[i]
 			tao := &ta.Outputs[i]
 			tao.ValueSat = output.ValueSat
+			// Particl privacy output fields
+			tao.OutputType = output.OutputType
+			tao.ValueCommitment = output.ValueCommitment
+			tao.RangeProof = output.RangeProof
 			addrDesc, err := d.chainParser.GetAddrDescFromVout(output)
 			if err != nil || len(addrDesc) == 0 || len(addrDesc) > maxAddrDescLen {
 				if err != nil {
@@ -706,6 +727,12 @@ func (d *RocksDB) processAddressesBitcoinType(block *bchain.Block, addresses add
 			if err != nil {
 				// do not process inputs without input txid
 				if err == bchain.ErrTxidMissing {
+					// For Particl RingCT inputs (anon type), store privacy fields even without txid
+					if d.extendedIndex && input.InputType != "" {
+						tai.InputType = input.InputType
+						tai.AnonInputs = input.AnonInputs
+						tai.RingSize = input.RingSize
+					}
 					continue
 				}
 				return err
@@ -748,6 +775,10 @@ func (d *RocksDB) processAddressesBitcoinType(block *bchain.Block, addresses add
 				spentOutput.SpentHeight = block.Height
 				tai.Txid = input.Txid
 				tai.Vout = input.Vout
+				// Particl privacy input fields
+				tai.InputType = input.InputType
+				tai.AnonInputs = input.AnonInputs
+				tai.RingSize = input.RingSize
 			}
 			if len(spentOutput.AddrDesc) == 0 {
 				if !logged {
@@ -1036,6 +1067,11 @@ func (d *RocksDB) packTxAddresses(ta *TxAddresses, buf []byte, varBuf []byte) []
 	for i := range ta.Outputs {
 		buf = d.appendTxOutput(&ta.Outputs[i], buf, varBuf)
 	}
+	// Pack CT fee for privacy transactions (extended index only)
+	if d.extendedIndex {
+		l = packVarint(int(ta.CTFeeSat), varBuf)
+		buf = append(buf, varBuf[:l]...)
+	}
 	return buf
 }
 
@@ -1064,6 +1100,14 @@ func (d *RocksDB) appendTxInput(txi *TxInput, buf []byte, varBuf []byte) []byte 
 			l = packVaruint(uint(txi.Vout), varBuf)
 			buf = append(buf, varBuf[:l]...)
 		}
+		// Particl privacy fields
+		l = packVaruint(uint(len(txi.InputType)), varBuf)
+		buf = append(buf, varBuf[:l]...)
+		buf = append(buf, []byte(txi.InputType)...)
+		l = packVaruint(uint(txi.AnonInputs), varBuf)
+		buf = append(buf, varBuf[:l]...)
+		l = packVaruint(uint(txi.RingSize), varBuf)
+		buf = append(buf, varBuf[:l]...)
 	} else {
 		l = packVaruint(uint(la), varBuf)
 		buf = append(buf, varBuf[:l]...)
@@ -1097,6 +1141,18 @@ func (d *RocksDB) appendTxOutput(txo *TxOutput, buf []byte, varBuf []byte) []byt
 		buf = append(buf, varBuf[:l]...)
 		l = packVaruint(uint(txo.SpentHeight), varBuf)
 		buf = append(buf, varBuf[:l]...)
+	}
+	// Particl privacy fields (always stored, not just for extended index)
+	if d.extendedIndex {
+		l = packVaruint(uint(len(txo.OutputType)), varBuf)
+		buf = append(buf, varBuf[:l]...)
+		buf = append(buf, []byte(txo.OutputType)...)
+		l = packVaruint(uint(len(txo.ValueCommitment)), varBuf)
+		buf = append(buf, varBuf[:l]...)
+		buf = append(buf, []byte(txo.ValueCommitment)...)
+		l = packVaruint(uint(len(txo.RangeProof)), varBuf)
+		buf = append(buf, varBuf[:l]...)
+		buf = append(buf, []byte(txo.RangeProof)...)
 	}
 	return buf
 }
@@ -1184,6 +1240,13 @@ func (d *RocksDB) unpackTxAddresses(buf []byte) (*TxAddresses, error) {
 	for i := uint(0); i < outputs; i++ {
 		l += d.unpackTxOutput(&ta.Outputs[i], buf[l:])
 	}
+	// Unpack CT fee for privacy transactions (extended index only, backward compatible)
+	if d.extendedIndex && l < len(buf) {
+		var ctFee int
+		ctFee, ll = unpackVarint(buf[l:])
+		ta.CTFeeSat = int64(ctFee)
+		l += ll
+	}
 	return &ta, nil
 }
 
@@ -1206,6 +1269,23 @@ func (d *RocksDB) unpackTxInput(ti *TxInput, buf []byte) int {
 			var i uint
 			i, l = unpackVaruint(buf[al:])
 			ti.Vout = uint32(i)
+			al += l
+		}
+		// Particl privacy fields (only if buffer has more data)
+		if al < len(buf) {
+			var fieldLen uint
+			fieldLen, l = unpackVaruint(buf[al:])
+			al += l
+			if fieldLen > 0 {
+				ti.InputType = string(buf[al : al+int(fieldLen)])
+				al += int(fieldLen)
+			}
+			var i uint
+			i, l = unpackVaruint(buf[al:])
+			ti.AnonInputs = uint32(i)
+			al += l
+			i, l = unpackVaruint(buf[al:])
+			ti.RingSize = uint32(i)
 			al += l
 		}
 		return al
@@ -1239,6 +1319,28 @@ func (d *RocksDB) unpackTxOutput(to *TxOutput, buf []byte) int {
 		i, l = unpackVaruint(buf[al:])
 		to.SpentHeight = uint32(i)
 		al += l
+	}
+	// Particl privacy fields (only if buffer has more data and extended index is enabled)
+	if d.extendedIndex && al < len(buf) {
+		var fieldLen uint
+		fieldLen, l = unpackVaruint(buf[al:])
+		al += l
+		if fieldLen > 0 {
+			to.OutputType = string(buf[al : al+int(fieldLen)])
+			al += int(fieldLen)
+		}
+		fieldLen, l = unpackVaruint(buf[al:])
+		al += l
+		if fieldLen > 0 {
+			to.ValueCommitment = string(buf[al : al+int(fieldLen)])
+			al += int(fieldLen)
+		}
+		fieldLen, l = unpackVaruint(buf[al:])
+		al += l
+		if fieldLen > 0 {
+			to.RangeProof = string(buf[al : al+int(fieldLen)])
+			al += int(fieldLen)
+		}
 	}
 	return al
 }

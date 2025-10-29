@@ -1,0 +1,179 @@
+/* Particl Branding Theme for Blockbook */
+
+:root {
+    /* Particl Brand Colors from branding guide */
+    --particl-green: #45D492;
+    --particl-green-dark: #3ab87c;
+    --particl-green-light: #5edd9f;
+    --particl-purple: #5949A7;
+    --particl-purple-dark: #4a3d8f;
+    --particl-purple-light: #6d5bb9;
+    --particl-blue: #15979D;
+    --particl-blue-dark: #127a7f;
+    --particl-blue-light: #1aacb3;
+    --particl-dark: #212121;
+    --particl-dark-light: #333333;
+    --particl-grey: #757575;
+
+    /* Override Bootstrap danger/warning colors with Particl colors */
+    --bs-danger: var(--particl-purple);
+    --bs-danger-rgb: 89, 73, 167;
+    --bs-warning: var(--particl-blue);
+    --bs-warning-rgb: 21, 151, 157;
+    --bs-success: var(--particl-green);
+    --bs-success-rgb: 69, 210, 146;
+}
+
+/* Override primary link colors - use Particl green */
+a {
+    color: var(--particl-green) !important;
+}
+
+a:hover {
+    color: var(--particl-green-dark) !important;
+}
+
+/* Form focus states */
+.form-control:focus {
+    border-color: var(--particl-green) !important;
+}
+
+/* Search button */
+.btn-primary {
+    background-color: var(--particl-green) !important;
+    border-color: var(--particl-green) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--particl-green-dark) !important;
+    border-color: var(--particl-green-dark) !important;
+}
+
+/* Secondary buttons - use purple */
+.btn-secondary {
+    background-color: var(--particl-purple) !important;
+    border-color: var(--particl-purple) !important;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active {
+    background-color: var(--particl-purple-dark) !important;
+    border-color: var(--particl-purple-dark) !important;
+}
+
+/* Info/accent elements - use blue */
+.btn-info,
+.badge-info,
+.alert-info {
+    background-color: var(--particl-blue) !important;
+    border-color: var(--particl-blue) !important;
+}
+
+/* Table headers and important elements */
+.table thead th {
+    border-bottom-color: var(--particl-green) !important;
+}
+
+/* Active navigation items */
+.nav-link.active {
+    color: var(--particl-green) !important;
+    border-bottom-color: var(--particl-green) !important;
+}
+
+/* Pagination active */
+.page-item.active .page-link {
+    background-color: var(--particl-green) !important;
+    border-color: var(--particl-green) !important;
+}
+
+/* Progress bars */
+.progress-bar {
+    background-color: var(--particl-green) !important;
+}
+
+/* Badges */
+.badge-primary {
+    background-color: var(--particl-green) !important;
+}
+
+.badge-secondary {
+    background-color: var(--particl-purple) !important;
+}
+
+/* Custom accent for data display */
+.data-label {
+    color: var(--particl-purple) !important;
+}
+
+/* Transaction/Block status indicators */
+.text-success {
+    color: var(--particl-green) !important;
+}
+
+.text-info {
+    color: var(--particl-blue) !important;
+}
+
+/* Dropdown hover states */
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: rgba(69, 212, 146, 0.1) !important;
+}
+
+/* Input group addon colors */
+.input-group-text {
+    border-color: var(--particl-green);
+}
+
+/* Card headers */
+.card-header {
+    background-color: rgba(69, 212, 146, 0.05);
+    border-bottom-color: var(--particl-green);
+}
+
+/* Spinner/loading indicators */
+.spinner-border {
+    color: var(--particl-green) !important;
+}
+
+/* Custom scrollbar (webkit browsers) */
+::-webkit-scrollbar-thumb {
+    background-color: var(--particl-green);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--particl-green-dark);
+}
+
+/* Selection highlight */
+::selection {
+    background-color: var(--particl-green);
+    color: white;
+}
+
+::-moz-selection {
+    background-color: var(--particl-green);
+    color: white;
+}
+
+/* Optional: Logo/header branding area */
+.navbar-brand {
+    font-weight: bold;
+    color: var(--particl-dark) !important;
+}
+
+/* Stats cards/widgets */
+.stats-widget {
+    border-left: 3px solid var(--particl-green);
+}
+
+.stats-widget.secondary {
+    border-left-color: var(--particl-purple);
+}
+
+.stats-widget.info {
+    border-left-color: var(--particl-blue);
+}

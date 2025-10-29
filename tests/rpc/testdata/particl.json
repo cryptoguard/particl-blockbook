@@ -1,0 +1,56 @@
+{
+  "blockHeight": 2025554,
+  "blockHash": "26e513e596f5d3c7bfee155ae8c2d57481fa4354b37a1bdb2429c85475af9be8",
+  "blockTime": 1761309840,
+  "blockTxs": [
+    "b480399e2dd29d6edd836a57567289d641a42ea2d7608708e734afec06999c1c"
+  ],
+  "txDetails": {
+    "b480399e2dd29d6edd836a57567289d641a42ea2d7608708e734afec06999c1c": {
+      "hex": "a002000000000176637c7055c62925e905a43788c508e2b7ebbeef67b8681d069a80d4de077f540100000000ffffffff02041152e81e0007f291b9c26409010affffff1e01e924f67b1f0000001976a914a5cea39a684776fa5d6782faf02baf04251b53bc88ac02473044022004aa8ebef4855db22ea020fa80e36987357fc444b8714f37dc3cd8c4c68f37050220513aa4f756fd8bab89271294b0744b4cfeb237ccd975967d764e84ebd223e5410121038553566dbf0b3c5464d64a8364002ff0b6a087f4c680eca3837dcfa713473ee5",
+      "txid": "b480399e2dd29d6edd836a57567289d641a42ea2d7608708e734afec06999c1c",
+      "blocktime": 1761309840,
+      "time": 1761309840,
+      "locktime": 0,
+      "version": 672,
+      "vin": [
+        {
+          "txid": "547f07ded4809a061d68b867efbeebb7e208c58837a405e92529c655707c6376",
+          "vout": 1,
+          "scriptSig": {
+            "asm": "",
+            "hex": ""
+          },
+          "txinwitness": [
+            "3044022004aa8ebef4855db22ea020fa80e36987357fc444b8714f37dc3cd8c4c68f37050220513aa4f756fd8bab89271294b0744b4cfeb237ccd975967d764e84ebd223e54101",
+            "038553566dbf0b3c5464d64a8364002ff0b6a087f4c680eca3837dcfa713473ee5"
+          ],
+          "sequence": 4294967295
+        }
+      ],
+      "vout": [
+        {
+          "n": 0,
+          "type": "data",
+          "data_hex": "52e81e0007f291b9c26409010affffff1e",
+          "treasury_fund_cfwd": 269.8289381,
+          "smsgfeerate": 1e-08,
+          "smsgdifficulty": "1effffff"
+        },
+        {
+          "n": 1,
+          "type": "standard",
+          "value": 1352.23715049,
+          "valueSat": 135223715049,
+          "scriptPubKey": {
+            "asm": "OP_DUP OP_HASH160 a5cea39a684776fa5d6782faf02baf04251b53bc OP_EQUALVERIFY OP_CHECKSIG",
+            "desc": "addr(Po3VBGWztKbFnU9rFGKNx2Rtg1zWoS4zTR)#n4k3gm0u",
+            "hex": "76a914a5cea39a684776fa5d6782faf02baf04251b53bc88ac",
+            "address": "Po3VBGWztKbFnU9rFGKNx2Rtg1zWoS4zTR",
+            "type": "pubkeyhash"
+          }
+        }
+      ]
+    }
+  }
+}

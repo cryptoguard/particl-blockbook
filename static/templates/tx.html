@@ -9,7 +9,7 @@
     <tbody>
         {{if $tx.Confirmations}}
         <tr>
-            <td>Mined Time</td>
+            <td>Staked Time</td>
             <td>{{unixTimeSpan $tx.Blocktime}}</td>
         </tr>
         {{end}}
@@ -110,7 +110,12 @@
         {{end}}
         {{end}}
         {{end}}
-        {{if $tx.FeesSat}}
+        {{if $tx.RewardSat}}
+        <tr>
+            <td>Reward</td>
+            <td>{{amountSpan $tx.RewardSat $data "copyable"}}</td>
+        </tr>
+        {{else if $tx.FeesSat}}
         <tr>
             <td>Fees</td>
             <td>{{amountSpan $tx.FeesSat $data "copyable"}}{{if $tx.Size}} ({{feePerByte $tx}}){{end}}</td>
@@ -210,7 +215,7 @@
         <pre id="raw" style="text-wrap: auto;"></pre>
     </div>
     <script>
-        const rawData = {{ $tx.CoinSpecificData }};
+        const rawData = JSON.parse({{ toJSON $tx }});
         const txId = {{ jsStr $tx.Txid }};
         handleTxPage(rawData, txId);
     </script>

@@ -1,11 +1,14 @@
 {{define "specific"}}
 <h1>Send Raw Transaction</h1>
+<div class="alert alert-warning" role="alert">
+    <strong>Note:</strong> Transaction broadcasting is temporarily disabled. Please use <code>particl-cli</code> or Particl Core wallet to send transactions.
+</div>
 <form method="POST" action="/sendtx">
     <div class="form-group">
         <label for="exampleFormControlTextarea1">Raw transaction data</label>
-        <textarea class="form-control" rows="8" name="hex">{{.SendTxHex}}</textarea>
+        <textarea class="form-control" rows="8" name="hex" disabled>{{.SendTxHex}}</textarea>
     </div>
-    <div class="form-group mt-3"><button type="submit" class="btn btn-outline-secondary">Send</button></div>
+    <div class="form-group mt-3"><button type="submit" class="btn btn-outline-secondary" disabled>Send</button></div>
 </form>
 {{if .Status}}
 <div class="alert alert-success mt-3">{{.Status}}</div>

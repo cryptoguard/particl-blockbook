@@ -473,6 +473,7 @@ func (w *SyncWorker) BulkConnectBlocks(lower, higher uint32) error {
 	go writeBlockWorker()
 	var hash string
 	start := time.Now()
+	lastLogTime := time.Now()
 	msTime := time.Now().Add(1 * time.Minute)
 ConnectLoop:
 	for h := lower; h <= higher; {
@@ -492,10 +493,11 @@ ConnectLoop:
 				continue
 			}
 			hch <- hashHeight{hash, h}
-			if h > 0 && h%1000 == 0 {
+			// Log every 10 seconds instead of every 1000 blocks
+			if time.Since(lastLogTime) >= 10*time.Second {
 				w.metrics.BlockbookBestHeight.Set(float64(h))
 				glog.Info("connecting block ", h, " ", hash, ", elapsed ", time.Since(start), " ", w.db.GetAndResetConnectBlockStats())
-				start = time.Now()
+				lastLogTime = time.Now()
 			}
 			if msTime.Before(time.Now()) {
 				if glog.V(1) {

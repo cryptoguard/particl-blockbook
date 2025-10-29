@@ -58,6 +58,11 @@ type Vin struct {
 	Sequence  uint32    `json:"sequence" ts_doc:"Sequence number for the input."`
 	Addresses []string  `json:"addresses" ts_doc:"Addresses derived from this input's script (if known)."`
 	Witness   [][]byte  `json:"-" ts_doc:"Witness data for SegWit inputs (not exposed via JSON)."`
+
+	// Particl privacy transaction fields for anon (RingCT) inputs
+	InputType   string `json:"type,omitempty" ts_doc:"Input type for Particl: 'standard' or 'anon'."`
+	AnonInputs  uint32 `json:"num_inputs,omitempty" ts_doc:"Number of real inputs in RingCT transaction."`
+	RingSize    uint32 `json:"ring_size,omitempty" ts_doc:"Size of the ring (decoy set) for RingCT inputs."`
 }
 
 // ScriptPubKey contains data about output script
@@ -74,6 +79,12 @@ type Vout struct {
 	JsonValue    common.JSONNumber `json:"value" ts_doc:"String-based amount for JSON usage."`
 	N            uint32            `json:"n" ts_doc:"Index of this output in the transaction."`
 	ScriptPubKey ScriptPubKey      `json:"scriptPubKey" ts_doc:"scriptPubKey object containing the output script data."`
+
+	// Particl privacy transaction fields
+	OutputType        string `json:"type,omitempty" ts_doc:"Output type for Particl: 'standard', 'blind', or 'anon'."`
+	ValueCommitment   string `json:"valueCommitment,omitempty" ts_doc:"Pedersen commitment for blind/anon outputs (hex)."`
+	Data              string `json:"data,omitempty" ts_doc:"Ephemeral public key for CT outputs (hex)."`
+	RangeProof        string `json:"rangeproof,omitempty" ts_doc:"Bulletproof range proof for CT outputs (hex)."`
 }
 
 // Tx is blockchain transaction

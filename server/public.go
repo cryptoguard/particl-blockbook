@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"io"
 	"math/big"
 	"net/http"
 	"net/url"
@@ -1493,29 +1492,10 @@ type resultSendTransaction struct {
 }
 
 func (s *PublicServer) apiSendTx(r *http.Request, apiVersion int) (interface{}, error) {
-	var err error
-	var res resultSendTransaction
-	var hex string
 	s.metrics.ExplorerViews.With(common.Labels{"action": "api-sendtx"}).Inc()
-	if r.Method == http.MethodPost {
-		data, err := io.ReadAll(r.Body)
-		if err != nil {
-			return nil, api.NewAPIError("Missing tx blob", true)
-		}
-		hex = string(data)
-	} else {
-		if i := strings.LastIndexByte(r.URL.Path, '/'); i > 0 {
-			hex = r.URL.Path[i+1:]
-		}
-	}
-	if len(hex) > 0 {
-		res.Result, err = s.chain.SendRawTransaction(hex, false)
-		if err != nil {
-			return nil, api.NewAPIError(err.Error(), true)
-		}
-		return res, nil
-	}
-	return nil, api.NewAPIError("Missing tx blob", true)
+
+	// Transaction broadcasting temporarily disabled
+	return nil, api.NewAPIError("Transaction broadcasting is temporarily disabled. Please use particl-cli or Particl Core wallet to send transactions.", true)
 }
 
 // apiAvailableVsCurrencies returns a list of available versus currencies
